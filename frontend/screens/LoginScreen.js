@@ -20,7 +20,7 @@ export default function App() {
     }
 
     try {
-      const response = await fetch('http://192.168.15.67:8080/user/login', {
+      const response = await fetch('http://rota/user/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
