@@ -1,20 +1,53 @@
 import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; 
 
 export default function App() {
   
+  const [email, setEmail] = useState(''); 
+  const [password, setPassword] = useState(''); 
   const [passwordVisible, setPasswordVisible] = useState(false); 
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
   };
 
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Erro', 'Por favor, preencha todos os campos.');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://192.168.15.67:8080/user/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user: email,
+          password: password,
+        }),
+      });
+
+      if (response.status === 200) {
+        Alert.alert('Sucesso', 'Login realizado com sucesso!');
+      } else if (response.status === 401) {
+        Alert.alert('Erro', 'Credenciais inválidas.');
+      } else {
+        Alert.alert('Erro', 'Ocorreu um erro. Tente novamente mais tarde.');
+      }
+    } catch (error) {
+      console.error('Erro ao fazer login:', error);
+      Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
+    }
+  };
+
   return (
     <View style={styles.container}>
 
-<Image
+      <Image
         style={styles.stretch}
         source={require('../assets/weather.png')}
       />
@@ -27,6 +60,9 @@ export default function App() {
           style={styles.input}
           placeholder="e-mail"
           placeholderTextColor="#999"
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail} 
         />
       </View>
       
@@ -37,6 +73,8 @@ export default function App() {
           placeholder="Senha"
           placeholderTextColor="#999"
           secureTextEntry={!passwordVisible}
+          value={password}
+          onChangeText={setPassword}
         />
          <TouchableOpacity onPress={togglePasswordVisibility}>
           <Ionicons 
@@ -48,9 +86,10 @@ export default function App() {
         </TouchableOpacity>
       </View>
       
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Entrar</Text>
       </TouchableOpacity>
+      
       <Text style={styles.linkText}>Primeiro acesso</Text>
       <StatusBar style="auto" />
     </View>
@@ -58,7 +97,6 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
- 
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -66,7 +104,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 20,
   },
-
   title: {
     marginTop: 20,
     fontSize: 32,
