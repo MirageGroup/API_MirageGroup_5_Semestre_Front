@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; 
+import { Ionicons } from '@expo/vector-icons';
 
-export default function App() {
-  
-  const [email, setEmail] = useState(''); 
-  const [password, setPassword] = useState(''); 
-  const [passwordVisible, setPasswordVisible] = useState(false); 
+const App: React.FC = () => {
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
@@ -20,7 +19,7 @@ export default function App() {
     }
 
     try {
-      const response = await fetch('http://rota/user/login', {
+      const response = await fetch('http://192.168.15.67:8080/user/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,9 +50,9 @@ export default function App() {
         style={styles.stretch}
         source={require('../assets/weather.png')}
       />
-      
+
       <Text style={styles.title}>ClimaMonitor</Text>
-      
+
       <View style={styles.inputContainer}>
         <Ionicons name="mail-outline" size={20} color="#666" style={styles.inputIcon} />
         <TextInput
@@ -62,10 +61,10 @@ export default function App() {
           placeholderTextColor="#999"
           keyboardType="email-address"
           value={email}
-          onChangeText={setEmail} 
+          onChangeText={setEmail}
         />
       </View>
-      
+
       <View style={styles.inputContainer}>
         <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
         <TextInput
@@ -76,25 +75,27 @@ export default function App() {
           value={password}
           onChangeText={setPassword}
         />
-         <TouchableOpacity onPress={togglePasswordVisibility}>
-          <Ionicons 
-            name={passwordVisible ? "eye-off-outline" : "eye-outline"} 
-            size={20} 
-            color="#666" 
-            style={styles.eyeIcon} 
+        <TouchableOpacity onPress={togglePasswordVisibility}>
+          <Ionicons
+            name={passwordVisible ? "eye-off-outline" : "eye-outline"}
+            size={20}
+            color="#666"
+            style={styles.eyeIcon}
           />
         </TouchableOpacity>
       </View>
-      
+
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Entrar</Text>
       </TouchableOpacity>
-      
+
       <Text style={styles.linkText}>Primeiro acesso</Text>
       <StatusBar style="auto" />
     </View>
   );
-}
+};
+
+export default App;
 
 const styles = StyleSheet.create({
   container: {
@@ -130,6 +131,11 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#333',
+  },
+  stretch: {
+    width: 80,
+    height: 80,
+    resizeMode: 'stretch',
   },
   eyeIcon: {
     marginLeft: 10,
