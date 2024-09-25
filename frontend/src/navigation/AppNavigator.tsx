@@ -1,10 +1,10 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
-import HomeScreen from '../screens/Home'; // Importando a Home
+import HomeScreen from '../screens/Home';
 
 type StackParamList = {
-  Home: undefined; // Apenas a rota para a Home
+  Home: undefined;
 };
 
 const Stack = createStackNavigator<StackParamList>();

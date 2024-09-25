@@ -5,17 +5,17 @@ import CardHome from '../components/CardHome';
 
 const Home: React.FC = () => {
   const [cardsData, setCardsData] = useState<Array<{
-    location: string;
-    date: string;
+    name: string;
+    datetime: string;
     temperature: string;
-    highTemp: string;
-    lowTemp: string;
-    rainfallPercentage: string;
+    temperature_max: string;
+    temperature_min: string;
+    rainfall: string;
   }>>([]);
 
   useEffect(() => {
-    // Substitua a URL pela URL do seu endpoint
-    axios.get('https://api.exemplo.com/weather')
+
+    axios.get('http://aquivaioipdamáquina:8080/locations/all')
       .then(response => {
         setCardsData(response.data);
       })
@@ -38,12 +38,12 @@ const Home: React.FC = () => {
         {cardsData.map((data, index) => (
           <CardHome
             key={index}
-            location={data.location}
-            date={data.date}
+            name={data.name}
+            datetime={data.datetime}
             temperature={data.temperature}
-            highTemp={data.highTemp}
-            lowTemp={data.lowTemp}
-            rainfallPercentage={data.rainfallPercentage}
+            temperature_max={data.temperature_max}
+            temperature_min={data.temperature_min}
+            rainfall={data.rainfall}
           />
         ))}
       </ScrollView>
