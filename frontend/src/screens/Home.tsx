@@ -15,7 +15,7 @@ const Home: React.FC = () => {
 
   useEffect(() => {
 
-    axios.get('http://192.168.15.5:8080/locations/all')
+    axios.get('http://ipv4:8080/locations/all')
       .then(response => {
         setCardsData(response.data);
       })
