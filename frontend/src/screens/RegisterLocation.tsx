@@ -7,6 +7,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  ScrollView,
 } from "react-native";
 import Slider from "../components/Slider";
 import axios from "axios";
@@ -49,7 +50,7 @@ const RegisterLocation: React.FC = () => {
     console.log(data);
 
     await axios
-      .post("http://192.168.141.46:8080/locations/create", data)
+      .post("http://192.168.15.67:8080/locations/create", data)
       .then((response) => {
         console.log("console log response:", response);
         Alert.alert("Sucesso", "Local registrado com sucesso!");
@@ -69,77 +70,79 @@ const RegisterLocation: React.FC = () => {
         />
         <Text style={styles.title}>Registrar um novo local</Text>
       </View>
-      <View style={styles.formContainer}>
-        <View>
-          <Text style={styles.inputTitle}>Nome</Text>
-          <TextInput style={styles.input} value={name} onChangeText={setName} />
-        </View>
-        <View>
-          <Text style={styles.inputTitle}>Nome do cultivo (opcional)</Text>
-          <TextInput
-            style={styles.input}
-            value={cropName}
-            onChangeText={setCropName}
-          />
-        </View>
-        <View
-          style={{
-            width: "100%",
-            flexDirection: "row",
-            justifyContent: "space-between",
-          }}
-        >
-          <View style={{ width: "45%" }}>
-            <Text style={styles.inputTitle}>Longitude</Text>
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.formContainer}>
+          <View>
+            <Text style={styles.inputTitle}>Nome</Text>
+            <TextInput style={styles.input} value={name} onChangeText={setName} />
+          </View>
+          <View>
+            <Text style={styles.inputTitle}>Nome do cultivo (opcional)</Text>
             <TextInput
               style={styles.input}
-              keyboardType="numeric"
-              value={longitude}
-              onChangeText={setLongitude}
+              value={cropName}
+              onChangeText={setCropName}
             />
           </View>
-          <View style={{ width: "45%" }}>
-            <Text style={styles.inputTitle}>Latitude</Text>
-            <TextInput
-              style={styles.input}
-              keyboardType="numeric"
-              value={latitude}
-              onChangeText={setLatitude}
+          <View
+            style={{
+              width: "100%",
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
+            <View style={{ width: "45%" }}>
+              <Text style={styles.inputTitle}>Longitude</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={longitude}
+                onChangeText={setLongitude}
+              />
+            </View>
+            <View style={{ width: "45%" }}>
+              <Text style={styles.inputTitle}>Latitude</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={latitude}
+                onChangeText={setLatitude}
+              />
+            </View>
+          </View>
+          <View style={{ gap: 4, marginBottom: 4 }}>
+            <Text style={styles.inputTitle}>Alerta de temperatura</Text>
+            <Slider
+              min={0}
+              max={50}
+              step={1}
+              initialMinValue={0}
+              initialMaxValue={50}
+              onValuesChange={handleTempValuesChange}
+              labelLeft="Temp Min"
+              labelRight="Temp Máx"
+              unit="°C"
+            />
+          </View>
+          <View style={{ gap: 4, marginBottom: 4 }}>
+            <Text style={styles.inputTitle}>Alerta de pluviometria</Text>
+            <Slider
+              min={0}
+              max={100}
+              step={1}
+              initialMinValue={0}
+              initialMaxValue={100}
+              onValuesChange={handlePluvValuesChange}
+              labelLeft="Pluv Min"
+              labelRight="Pluv Máx"
+              unit="%"
             />
           </View>
         </View>
-        <View style={{ gap: 4, marginBottom: 4 }}>
-          <Text style={styles.inputTitle}>Alerta de temperatura</Text>
-          <Slider
-            min={0}
-            max={50}
-            step={1}
-            initialMinValue={0}
-            initialMaxValue={50}
-            onValuesChange={handleTempValuesChange}
-            labelLeft="Temp Min"
-            labelRight="Temp Máx"
-            unit="°C"
-          />
-        </View>
-        <View style={{ gap: 4, marginBottom: 4 }}>
-          <Text style={styles.inputTitle}>Alerta de pluviometria</Text>
-          <Slider
-            min={0}
-            max={100}
-            step={1}
-            initialMinValue={0}
-            initialMaxValue={100}
-            onValuesChange={handlePluvValuesChange}
-            labelLeft="Pluv Min"
-            labelRight="Pluv Máx"
-            unit="%"
-          />
-        </View>
-      </View>
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Salvar</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+          <Text style={styles.buttonText}>Salvar</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </View>
   );
 };
@@ -152,8 +155,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 80,
+    paddingVertical: 10,
     gap: 10,
+  },
+  scrollView: {
+    flex: 1,
+    alignContent: 'stretch'
   },
   titleArea: {
     flexDirection: "row",
@@ -162,6 +169,8 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     gap: 12,
     paddingHorizontal: 8,
+    marginTop: 40
+
   },
   title: {
     fontSize: 20,
