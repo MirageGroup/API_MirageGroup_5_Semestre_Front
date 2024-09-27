@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Feather from '@expo/vector-icons/Feather';
 
 interface CardHomeProps {
   name: string;
@@ -7,10 +8,10 @@ interface CardHomeProps {
   temperature: string;
   temperature_max: string;
   temperature_min: string;
-  rainfall: string;
+  humidity: string;
 }
 
-const CardHome: React.FC<CardHomeProps> = ({ name, datetime, temperature, temperature_max, temperature_min, rainfall }) => {
+const CardHome: React.FC<CardHomeProps> = ({ name, datetime, temperature, temperature_max, temperature_min, humidity }) => {
   return (
     <View style={styles.card}>
       <View style={styles.title}>
@@ -24,8 +25,16 @@ const CardHome: React.FC<CardHomeProps> = ({ name, datetime, temperature, temper
           <Text style={styles.lowTemp}>{temperature_min}°↓</Text>
         </View>
       </View>
+      {(temperature > temperature_max || temperature < temperature_min) && temperature ?
+        <View style={styles.alertContainer}>
+          <Feather name="alert-triangle" size={24} color="red" />
+          <Text style={styles.alertText}>
+            Hoje as temperaturas vão estar {temperature > temperature_max ? 'acima' : 'abaixo'} da temperatura {temperature > temperature_max ? 'maxima' : 'minima'} do cultivo!
+          </Text>
+        </View> : null
+      }
       <Text style={styles.rainfall}>
-        Índice de pluviometria atual: <Text style={styles.rainfallPercentage}>{rainfall}%</Text>
+        Índice de umidade atual: <Text style={styles.rainfallPercentage}>{humidity}%</Text>
       </Text>
     </View>
   );
@@ -84,6 +93,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#000',
   },
+
+  alertContainer:{
+    flex:1,
+    flexDirection: 'row',
+    alignItems:"center",
+    gap:8,
+    marginBottom:8,
+    
+  },
+
+  alertText:{
+    marginRight:26,
+    
+  }
 });
 
 export default CardHome;

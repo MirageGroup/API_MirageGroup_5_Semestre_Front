@@ -125,7 +125,7 @@ const RegisterLocation: React.FC = () => {
             />
           </View>
           <View style={{ gap: 4, marginBottom: 4 }}>
-            <Text style={styles.inputTitle}>Alerta de pluviometria</Text>
+            <Text style={styles.inputTitle}>Alerta de umidade</Text>
             <Slider
               min={0}
               max={100}

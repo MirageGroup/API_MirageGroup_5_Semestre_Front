@@ -10,12 +10,12 @@ const Home: React.FC = () => {
     temperature: string;
     temperature_max: string;
     temperature_min: string;
-    rainfall: string;
+    humidity: string;
   }>>([]);
 
   useEffect(() => {
 
-    axios.get('http://192.168.15.67:8080/locations/all')
+    axios.get('http://192.168.15.5:8080/locations/all')
       .then(response => {
         setCardsData(response.data);
       })
@@ -43,7 +43,7 @@ const Home: React.FC = () => {
             temperature={data.temperature}
             temperature_max={data.temperature_max}
             temperature_min={data.temperature_min}
-            rainfall={data.rainfall}
+            humidity={data.humidity}
           />
         ))}
       </ScrollView>
