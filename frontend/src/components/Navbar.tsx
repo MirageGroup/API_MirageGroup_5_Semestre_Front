@@ -4,16 +4,16 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { FontAwesome5, FontAwesome6, Feather, Ionicons } from '@expo/vector-icons';
 type RootStackParamList = {
   Home: undefined;
-  Statistics: undefined;
+  Dashboard: undefined;
   Location: undefined;
   Profile: undefined;
 };
 
 const Navbar = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const [activePage, setActivePage] = useState<'Home' | 'Statistics' | 'Location' | 'Profile'>('Home');
+  const [activePage, setActivePage] = useState<'Home' | 'Dashboard' | 'Location' | 'Profile'>('Home');
 
-  const handleNavigation = (page: 'Home' | 'Statistics' | 'Location' | 'Profile') => {
+  const handleNavigation = (page: 'Home' | 'Dashboard' | 'Location' | 'Profile') => {
     setActivePage(page);
     navigation.navigate(page);
   };
@@ -24,8 +24,8 @@ const Navbar = () => {
         <TouchableOpacity onPress={() => handleNavigation('Home')} style={[styles.button, activePage === 'Home' && styles.activeButton]}>
           <Ionicons name="grid" size={32} color={activePage === 'Home' ? '#3874CF' : 'black'} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleNavigation('Statistics')} style={[styles.button, activePage === 'Statistics' && styles.activeButton]}>
-          <FontAwesome6 name="chart-simple" size={32} color={activePage === 'Statistics' ? '#3874CF' : 'black'} />
+        <TouchableOpacity onPress={() => handleNavigation('Dashboard')} style={[styles.button, activePage === 'Dashboard' && styles.activeButton]}>
+          <FontAwesome6 name="chart-simple" size={32} color={activePage === 'Dashboard' ? '#3874CF' : 'black'} />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => handleNavigation('Location')} style={[styles.button, activePage === 'Location' && styles.activeButton]}>
           <Feather name="plus-circle" size={38} color={activePage === 'Location' ? '#3874CF' : 'black'} />

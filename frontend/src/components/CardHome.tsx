@@ -11,12 +11,20 @@ interface CardHomeProps {
   humidity: string;
 }
 
+const getData = new Date();
+
+const dia = getData.getDate();
+const mes = getData.getMonth() + 1;
+const ano = getData.getFullYear();
+
+const dataHoje = `${dia}/${mes}/${ano}`;
+
 const CardHome: React.FC<CardHomeProps> = ({ name, datetime, temperature, temperature_max, temperature_min, humidity }) => {
   return (
     <View style={styles.card}>
       <View style={styles.title}>
         <Text style={styles.location}>{name}, </Text>
-        <Text style={styles.date}>{datetime}</Text>
+        <Text style={styles.date}>{dataHoje}</Text>
       </View>
       <View style={styles.temp}>
         <Text style={styles.temperature}>{temperature}°C</Text>
@@ -42,10 +50,21 @@ const CardHome: React.FC<CardHomeProps> = ({ name, datetime, temperature, temper
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fbfbfb',
     borderRadius: 10,
+    marginHorizontal: 4,
     padding: 15,
     marginBottom: 15,
+    marginTop: 3,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+
+    elevation: 4,
   },
   title: {
     flex: 1,
@@ -58,7 +77,8 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   location: {
-    fontSize: 18,
+    fontSize: 14,
+    fontWeight: '500',
     color: '#333',
   },
   date: {
@@ -66,7 +86,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   temperature: {
-    fontSize: 50,
+    fontSize: 40,
     fontWeight: 'bold',
     color: '#1E1E1E',
     marginRight: 14
@@ -94,18 +114,19 @@ const styles = StyleSheet.create({
     color: '#000',
   },
 
-  alertContainer:{
-    flex:1,
+  alertContainer: {
+    flex: 1,
     flexDirection: 'row',
-    alignItems:"center",
-    gap:8,
-    marginBottom:8,
-    
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 8,
+
   },
 
-  alertText:{
-    marginRight:26,
-    
+  alertText: {
+    marginRight: 26,
+    fontSize: 10,
+
   }
 });
 

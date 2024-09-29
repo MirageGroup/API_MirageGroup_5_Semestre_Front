@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import {
   View,
   StyleSheet,
@@ -54,6 +55,17 @@ const RegisterLocation: React.FC = () => {
       .then((response) => {
         console.log("console log response:", response);
         Alert.alert("Sucesso", "Local registrado com sucesso!");
+
+        setName("");
+        setCropName("");
+        setLatitude("");
+        setLongitude("");
+        setTempMin(0);
+        setTempMax(50);
+        setPluvMin(0);
+        setPluvMax(50);
+        setHumidityMin(50);
+        setHumidityMax(90);
       })
       .catch((error) => {
         console.error("Erro ao registrar local:", error);
@@ -64,16 +76,13 @@ const RegisterLocation: React.FC = () => {
   return (
     <View style={styles.container}>
       <View style={styles.titleArea}>
-        <Image
-          style={styles.iconTitle}
-          source={require("../../assets/location.png")}
-        />
+        <MaterialIcons name="location-on" size={32} color="#3874CF" />
         <Text style={styles.title}>Registrar um novo local</Text>
       </View>
       <ScrollView style={styles.scrollView}>
         <View style={styles.formContainer}>
           <View>
-            <Text style={styles.inputTitle}>Nome</Text>
+            <Text style={styles.inputTitle}>Nome do local</Text>
             <TextInput style={styles.input} value={name} onChangeText={setName} />
           </View>
           <View>
@@ -166,7 +175,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     width: "100%",
     justifyContent: "flex-start",
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: 12,
     paddingHorizontal: 8,
     marginTop: 40

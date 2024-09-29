@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import axios from 'axios';
 import CardHome from '../components/CardHome';
+import { useFocusEffect } from '@react-navigation/native';
 
 const Home: React.FC = () => {
   const [cardsData, setCardsData] = useState<Array<{
@@ -13,16 +14,20 @@ const Home: React.FC = () => {
     humidity: string;
   }>>([]);
 
-  useEffect(() => {
+  const fetchLocations = async () => {
+    try {
+      const response = await axios.get('http://192.168.15.67:8080/locations/all');
+      setCardsData(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar dados:', error);
+    }
+  };
 
-    axios.get('http://ipv4:8080/locations/all')
-      .then(response => {
-        setCardsData(response.data);
-      })
-      .catch(error => {
-        console.error('Erro ao buscar dados:', error);
-      });
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchLocations();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>
@@ -76,6 +81,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+
   },
 });
 
