@@ -1,14 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
-import Navbar from './src/components/Navbar';
 
 export default function App() {
   return (
-    <Navbar />
+    <View style={styles.container}>
+      <Text>Template Inicial Frontend Mirage API 5</Text>
+      <StatusBar style="auto" />
+    </View>
   );
 }
-
-
 
 const styles = StyleSheet.create({
   container: {
