@@ -16,7 +16,7 @@ const Home: React.FC = () => {
 
   const fetchLocations = async () => {
     try {
-      const response = await axios.get('http://192.168.15.67:8080/locations/all');
+      const response = await axios.get('http://seuipv4:8080/locations/all');
       setCardsData(response.data);
     } catch (error) {
       console.error('Erro ao buscar dados:', error);
