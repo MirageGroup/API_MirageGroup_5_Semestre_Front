@@ -1,10 +1,5 @@
 {
   "compilerOptions": {},
-<<<<<<< HEAD
   "extends": "expo/tsconfig.base",
   "strict": true,
 }
-=======
-  "extends": "expo/tsconfig.base"
-}
->>>>>>> feature/login-frontend
