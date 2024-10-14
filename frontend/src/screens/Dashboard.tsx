@@ -1,23 +1,297 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { MaterialIcons } from "@expo/vector-icons";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Dimensions,
+  TouchableOpacity,
+} from "react-native";
+import { BarChart, LineChart } from "react-native-chart-kit";
 
-const Dashboard: React.FC = () => {
+const Dashboard: React.FC<{ route: any }> = ({ route }) => {
+  const { location } = route.params;
+  const { latitude, longitude, name } = location;
+
+  const getData = new Date();
+  const dia = getData.getDate();
+  const mes = getData.getMonth() + 1;
+  const ano = getData.getFullYear();
+  const dataHoje = `${dia}/${mes}/${ano}`;
+
+  const fetchWeatherData = async (
+    latitude: number,
+    longitude: number,
+    startDate: string,
+    endDate: string
+  ) => {
+    const response = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}&temperature_unit=celsius&daily=temperature_2m_max,temperature_2m_min&current_weather=true&timezone=auto`
+    );
+    const data = await response.json();
+    return data;
+  };
+
+  const [temperatureData, setTemperatureData] = useState({
+    labels: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+    datasets: [
+      {
+        data: [25, 27, 28, 29, 30, 32, 31].map((value) => value || 0),
+        color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
+      },
+      {
+        data: [18, 19, 20, 21, 22, 23, 24].map((value) => value || 0),
+        color: (opacity = 1) => `rgba(0, 0, 255, ${opacity})`,
+      },
+    ],
+    legend: ["Máxima", "Mínima"],
+  });
+
+  const [precipitationData, setPrecipitationData] = useState({
+    labels: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+    datasets: [
+      {
+        data: [0, 0, 0, 0, 0, 0, 0],
+        color: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
+      },
+    ],
+  });
+
+  const [currentTemperature, setCurrentTemperature] = useState<number | null>(
+    null
+  );
+  const [maxTemperature, setMaxTemperature] = useState<number | null>(null);
+  const [minTemperature, setMinTemperature] = useState<number | null>(null);
+
+  const startDate = "2024-10-14";
+  const endDate = "2024-10-28";
+
+  const [selectedLocation, setSelectedLocation] = useState(location);
+
+  useEffect(() => {
+    const getWeatherData = async () => {
+      const data = await fetchWeatherData(
+        selectedLocation.latitude,
+        selectedLocation.longitude,
+        startDate,
+        endDate
+      );
+
+      const maxTemperatures = (data?.daily?.temperature_2m_max || []).map(
+        (value) => Math.round(value) || 0
+      );
+      const minTemperatures = (data?.daily?.temperature_2m_min || []).map(
+        (value) => Math.round(value) || 0
+      );
+
+      const currentWeather = data?.current_weather;
+      const currentTemp = currentWeather?.temperature;
+
+      const roundedCurrentTemp = Math.round(currentTemp);
+
+      setCurrentTemperature(roundedCurrentTemp);
+      setMaxTemperature(Math.max(...maxTemperatures));
+      setMinTemperature(Math.min(...minTemperatures));
+
+      setTemperatureData({
+        labels: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+        datasets: [
+          {
+            data: maxTemperatures,
+            color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
+          },
+          {
+            data: minTemperatures,
+            color: (opacity = 1) => `rgba(0, 0, 255, ${opacity})`,
+          },
+        ],
+        legend: ["Máxima", "Mínima"],
+      });
+
+      const precipitationAmounts = (data?.daily?.precipitation_sum || []).map(
+        (value) => value ?? 0
+      );
+
+      setPrecipitationData({
+        labels: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+        datasets: [
+          {
+            data: precipitationAmounts,
+            color: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
+          },
+        ],
+      });
+    };
+
+    getWeatherData();
+  }, [selectedLocation]);
+
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const toggleDropdown = () => {
+    setIsDropdownOpen((prev) => !prev);
+  };
+
+  const [locations, setLocations] = useState<Array<any>>([]);
+
+  const fetchLocations = async () => {
+    try {
+      const response = await axios.get("http://seuipv4:8080/locations/all");
+      setLocations(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar localidades:", error);
+    }
+  };
+
+  const handleLocationSelect = (loc: any) => {
+    setSelectedLocation(loc);
+    setIsDropdownOpen(false); // Fecha o dropdown após a seleção
+  };
+
+  useEffect(() => {
+    fetchLocations();
+  }, []);
 
   return (
     <View style={styles.container}>
-      <Text>Aqui será a Dashboard</Text>
-      <StatusBar style="auto" />
+      <View style={styles.dropdownContainer}>
+        <TouchableOpacity style={styles.dropdown} onPress={toggleDropdown}>
+          <MaterialIcons name="location-on" size={24} color="black" />
+          <Text style={styles.dropdownText}>{selectedLocation.name}</Text>
+          <MaterialIcons
+            name={isDropdownOpen ? "arrow-drop-up" : "arrow-drop-down"}
+            size={24}
+            color="black"
+          />
+        </TouchableOpacity>
+        {isDropdownOpen && (
+          <View style={styles.dropdownMenu}>
+            {locations.map((loc, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.dropdownItem}
+                onPress={() => handleLocationSelect(loc)} // Chama a função de seleção
+              >
+                <Text>{loc.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
+
+      <View style={styles.temperatureContainer}>
+        <Text style={{ fontWeight: "thin" }}>Hoje, {dataHoje}</Text>
+        {currentTemperature !== null && (
+          <Text style={styles.currentTemperature}>{currentTemperature}°C</Text>
+        )}
+        {maxTemperature !== null && minTemperature !== null && (
+          <Text style={styles.variation}>
+            <Text style={{ color: "#000" }}>{maxTemperature}°</Text>
+            <Text style={{ color: "#FF0000" }}>↑</Text>
+            <Text style={{ color: "#000" }}>{minTemperature}°</Text>
+            <Text style={{ color: "#007BFF" }}>↓</Text>
+          </Text>
+        )}
+      </View>
+
+      <View style={styles.chartContainer}>
+        <Text style={styles.sectionTitle}>Variação da temperatura</Text>
+        <LineChart
+          data={temperatureData}
+          width={Dimensions.get("window").width - 40}
+          height={220}
+          chartConfig={{
+            backgroundColor: "#ffffff",
+            backgroundGradientFrom: "#ffffff",
+            backgroundGradientTo: "#ffffff",
+            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+          }}
+          bezier
+        />
+      </View>
+
+      <View style={styles.barChartContainer}>
+        <Text style={styles.sectionTitle}>Pluviometria</Text>
+        <BarChart
+          data={precipitationData}
+          width={Dimensions.get("window").width - 40}
+          height={220}
+          chartConfig={{
+            backgroundColor: "#ffffff",
+            backgroundGradientFrom: "#ffffff",
+            backgroundGradientTo: "#ffffff",
+            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+          }}
+        />
+      </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#fff",
+  },
+  dropdownContainer: {
+    position: "relative",
+    margin: 20,
+  },
+  dropdown: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    backgroundColor: "#fff",
+  },
+  dropdownText: {
+    marginLeft: 10,
+    fontSize: 16,
+  },
+  dropdownMenu: {
+    position: "absolute",
+    top: 50, // ajuste conforme necessário
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    zIndex: 1,
+  },
+  dropdownItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+  },
+  temperatureContainer: {
+    alignItems: "flex-start",
+    marginLeft: 20,
+    marginVertical: 20,
+  },
+  currentTemperature: {
+    fontSize: 80,
+    fontWeight: "bold",
+  },
+  variation: {
+    fontSize: 18,
+    color: "#666",
+  },
+  chartContainer: {
+    marginVertical: 20,
+    paddingHorizontal: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  barChartContainer: {
+    marginVertical: 20,
+    paddingHorizontal: 20,
   },
 });
 
-export default Dashboard
+export default Dashboard;
