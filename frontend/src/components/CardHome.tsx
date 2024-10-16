@@ -1,6 +1,7 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import Feather from "@expo/vector-icons/Feather";
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import Feather from '@expo/vector-icons/Feather';
+import * as Notifications from 'expo-notifications';
 
 interface CardHomeProps {
   name: string;
@@ -21,16 +22,38 @@ const ano = getData.getFullYear();
 
 const dataHoje = `${dia}/${mes}/${ano}`;
 
-const CardHome: React.FC<CardHomeProps> = ({
-  name,
-  datetime,
-  temperature,
-  temperature_max,
-  temperature_min,
-  humidity,
-  temperature_max_backend,
-  temperature_min_backend,
-}) => {
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
+const sendNotification = async (title: string, body: string) => {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title,
+      body,
+      sound: true,
+    },
+    trigger: null, 
+  });
+};
+
+const CardHome: React.FC<CardHomeProps> = ({ name, datetime, temperature, temperature_max, temperature_min, humidity }) => {
+  
+  const showAlert = temperature > temperature_max || temperature < temperature_min;
+  
+  useEffect(() => {
+    if(showAlert) {
+      const title = 'Alerta de Temperatura!';
+      const body = `As temperaturas de ${name} estão ${temperature > temperature_max ? 'acima' : 'abaixo'} da faixa recomendada.`
+      
+      sendNotification(title, body);
+    }
+  }, [showAlert]);
+  
   return (
     <View style={styles.card}>
       <View style={styles.title}>
@@ -46,6 +69,8 @@ const CardHome: React.FC<CardHomeProps> = ({
           <Text style={{ color: "#007BFF", fontSize: 18 }}>↓</Text>
         </View>
       </View>
+      
+      {showAlert && (
       {(temperature_max > temperature_max_backend || temperature_min < temperature_min_backend) ? (
         <View style={styles.alertContainer}>
           <Feather name="alert-triangle" size={24} color="red" />
@@ -55,7 +80,7 @@ const CardHome: React.FC<CardHomeProps> = ({
             {temperature_max > temperature_max_backend ? "máxima" : "mínima"} do cultivo registrado!
           </Text>
         </View>
-      ) : null}
+      )}
       <Text style={styles.rainfall}>
         Índice de pluviometria atual:{" "}
         <Text style={styles.rainfallPercentage}>{humidity}%</Text>
