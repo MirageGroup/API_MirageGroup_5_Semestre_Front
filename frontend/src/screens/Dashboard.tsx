@@ -78,8 +78,8 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
     const getWeatherData = async () => {
       setLoading(true);
       const data = await fetchWeatherData(
-        latitude,
-        longitude,
+        selectedLocation.latitude, 
+        selectedLocation.longitude, 
         startDate,
         endDate
       );
@@ -157,7 +157,7 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
   const fetchLocations = async () => {
     try {
       const response = await axios.get(
-        "http://192.168.179.46:8080/locations/all"
+        "http://seuipv4:8080/locations/all"
       );
       setLocations(response.data);
     } catch (error) {
@@ -201,9 +201,9 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
             style={[styles.dropdownMenu, { opacity: dropdownOpacity }]}
           >
             <ScrollView>
-              {locations.map((item) => (
+              {locations.map((item, index) => (
                 <TouchableOpacity
-                  key={item.name}
+                  key={`${item.name}-${index}`}
                   style={styles.dropdownItem}
                   onPress={() => handleLocationSelect(item)}
                 >

@@ -23,7 +23,7 @@ const Home: React.FC<{ navigation: any }> = ({ navigation }) => {
   const fetchLocations = async () => {
     try {
       const response = await axios.get(
-        "http://192.168.179.46:8080/locations/all"
+        "http://seuipv4:8080/locations/all"
       );
       const locations = response.data;
 

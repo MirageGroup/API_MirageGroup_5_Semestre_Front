@@ -31,7 +31,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     }
 
     try {
-      const response = await fetch("http://192.168.179.46:8080/user/login", {
+      const response = await fetch("http://seuipv4:8080/user/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
