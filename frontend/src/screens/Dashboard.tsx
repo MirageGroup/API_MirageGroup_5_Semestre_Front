@@ -157,7 +157,7 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
   const fetchLocations = async () => {
     try {
       const response = await axios.get(
-        "http://seuipv4:8080/locations/all"
+        "http://ipv4:8080/locations/all"
       );
       setLocations(response.data);
     } catch (error) {

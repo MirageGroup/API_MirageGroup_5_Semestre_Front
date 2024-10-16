@@ -51,7 +51,7 @@ const RegisterLocation: React.FC = () => {
     console.log(data);
 
     await axios
-      .post("http://seuipv4:8080/locations/create", data)
+      .post("http://ipv4:8080/locations/create", data)
       .then((response) => {
         console.log("console log response:", response);
         Alert.alert("Sucesso", "Local registrado com sucesso!");
