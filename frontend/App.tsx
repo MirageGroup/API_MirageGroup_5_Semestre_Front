@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import Navbar from "./src/components/Navbar";
@@ -7,6 +7,7 @@ import RegisterLocation from "./src/screens/RegisterLocation";
 import Dashboard from "./src/screens/Dashboard";
 import Profile from "./src/screens/Profile";
 import Login from "./src/screens/LoginScreen";
+import * as Notifications from "expo-notifications";
 
 const Stack = createStackNavigator();
 
@@ -15,6 +16,17 @@ export default function App() {
   const handleLogin = () => {
     setIsLoggedIn(true);
   };
+
+  const requestPermissions = async () => {
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Permissão de notificação negada!');
+    }
+  };
+  
+  useEffect(() => {
+    requestPermissions();
+  }, []);
 
   return (
     <NavigationContainer>

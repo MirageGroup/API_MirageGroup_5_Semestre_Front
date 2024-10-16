@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
+import * as Notifications from 'expo-notifications';
 
 interface CardHomeProps {
   name: string;
@@ -19,7 +20,38 @@ const ano = getData.getFullYear();
 
 const dataHoje = `${dia}/${mes}/${ano}`;
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
+const sendNotification = async (title: string, body: string) => {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title,
+      body,
+      sound: true,
+    },
+    trigger: null, 
+  });
+};
+
 const CardHome: React.FC<CardHomeProps> = ({ name, datetime, temperature, temperature_max, temperature_min, humidity }) => {
+  
+  const showAlert = temperature > temperature_max || temperature < temperature_min;
+  
+  useEffect(() => {
+    if(showAlert) {
+      const title = 'Alerta de Temperatura!';
+      const body = `As temperaturas de ${name} estão ${temperature > temperature_max ? 'acima' : 'abaixo'} da faixa recomendada.`
+      
+      sendNotification(title, body);
+    }
+  }, [showAlert]);
+  
   return (
     <View style={styles.card}>
       <View style={styles.title}>
@@ -33,14 +65,14 @@ const CardHome: React.FC<CardHomeProps> = ({ name, datetime, temperature, temper
           <Text style={styles.lowTemp}>{temperature_min}°↓</Text>
         </View>
       </View>
-      {(temperature > temperature_max || temperature < temperature_min) && temperature ?
+      {showAlert && (
         <View style={styles.alertContainer}>
           <Feather name="alert-triangle" size={24} color="red" />
           <Text style={styles.alertText}>
             Hoje as temperaturas vão estar {temperature > temperature_max ? 'acima' : 'abaixo'} da temperatura {temperature > temperature_max ? 'maxima' : 'minima'} do cultivo!
           </Text>
-        </View> : null
-      }
+        </View>
+      )}
       <Text style={styles.rainfall}>
         Índice de umidade atual: <Text style={styles.rainfallPercentage}>{humidity}%</Text>
       </Text>
