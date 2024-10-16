@@ -1,4 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import Entypo from '@expo/vector-icons/Entypo';
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
@@ -7,6 +8,7 @@ import {
   View,
   Dimensions,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
 import { BarChart, LineChart } from "react-native-chart-kit";
 
@@ -20,6 +22,7 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
   const ano = getData.getFullYear();
   const dataHoje = `${dia}/${mes}/${ano}`;
 
+
   const fetchWeatherData = async (
     latitude: number,
     longitude: number,
@@ -27,7 +30,7 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
     endDate: string
   ) => {
     const response = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}&temperature_unit=celsius&daily=temperature_2m_max,temperature_2m_min&current_weather=true&timezone=auto`
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}&temperature_unit=celsius&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&current_weather=true&timezone=auto`
     );
     const data = await response.json();
     return data;
@@ -77,6 +80,7 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
         startDate,
         endDate
       );
+      console.log("Dados de precipitação:", data.daily?.precipitation_sum);
 
       const maxTemperatures = (data?.daily?.temperature_2m_max || []).map(
         (value) => Math.round(value) || 0
@@ -99,15 +103,16 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
         datasets: [
           {
             data: maxTemperatures,
-            color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
+            color: () => `rgba(242, 136, 136, 1)`,
           },
           {
             data: minTemperatures,
-            color: (opacity = 1) => `rgba(0, 0, 255, ${opacity})`,
+            color: () => `rgba(90, 172, 207, 1)`,
           },
         ],
         legend: ["Máxima", "Mínima"],
       });
+
 
       const precipitationAmounts = (data?.daily?.precipitation_sum || []).map(
         (value) => value ?? 0
@@ -118,7 +123,7 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
         datasets: [
           {
             data: precipitationAmounts,
-            color: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
+            color: (opacity = 1) => `rgba(90, 106, 207, ${opacity})`,
           },
         ],
       });
@@ -145,7 +150,7 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
 
   const handleLocationSelect = (loc: any) => {
     setSelectedLocation(loc);
-    setIsDropdownOpen(false); // Fecha o dropdown após a seleção
+    setIsDropdownOpen(false);
   };
 
   useEffect(() => {
@@ -153,13 +158,13 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.dropdownContainer}>
         <TouchableOpacity style={styles.dropdown} onPress={toggleDropdown}>
           <MaterialIcons name="location-on" size={24} color="black" />
           <Text style={styles.dropdownText}>{selectedLocation.name}</Text>
-          <MaterialIcons
-            name={isDropdownOpen ? "arrow-drop-up" : "arrow-drop-down"}
+          <Entypo style={{ marginLeft: 70 }}
+            name={isDropdownOpen ? "chevron-up" : "chevron-down"}
             size={24}
             color="black"
           />
@@ -170,7 +175,7 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
               <TouchableOpacity
                 key={index}
                 style={styles.dropdownItem}
-                onPress={() => handleLocationSelect(loc)} // Chama a função de seleção
+                onPress={() => handleLocationSelect(loc)}
               >
                 <Text>{loc.name}</Text>
               </TouchableOpacity>
@@ -180,15 +185,15 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
       </View>
 
       <View style={styles.temperatureContainer}>
-        <Text style={{ fontWeight: "thin" }}>Hoje, {dataHoje}</Text>
+        <Text style={{ fontWeight: "200" }}>Hoje, {dataHoje}</Text>
         {currentTemperature !== null && (
           <Text style={styles.currentTemperature}>{currentTemperature}°C</Text>
         )}
         {maxTemperature !== null && minTemperature !== null && (
           <Text style={styles.variation}>
-            <Text style={{ color: "#000" }}>{maxTemperature}°</Text>
+            <Text style={{ color: "#000", fontWeight: "200" }}>{maxTemperature}°</Text>
             <Text style={{ color: "#FF0000" }}>↑</Text>
-            <Text style={{ color: "#000" }}>{minTemperature}°</Text>
+            <Text style={{ color: "#000", fontWeight: "200" }}>{minTemperature}°</Text>
             <Text style={{ color: "#007BFF" }}>↓</Text>
           </Text>
         )}
@@ -204,10 +209,27 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
             backgroundColor: "#ffffff",
             backgroundGradientFrom: "#ffffff",
             backgroundGradientTo: "#ffffff",
-            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            decimalPlaces: 0,
+            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            propsForDots: {
+              r: "0",
+              strokeWidth: "2",
+              stroke: "#f28c8c",
+            },
+            propsForBackgroundLines: {
+              stroke: "#e3e3e3",
+              strokeWidth: 1,
+            },
           }}
           bezier
+          style={{
+            marginVertical: 8,
+          }}
+          verticalLabelRotation={0}
         />
+
+
       </View>
 
       <View style={styles.barChartContainer}>
@@ -215,16 +237,25 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
         <BarChart
           data={precipitationData}
           width={Dimensions.get("window").width - 40}
-          height={220}
+          height={200}
           chartConfig={{
             backgroundColor: "#ffffff",
             backgroundGradientFrom: "#ffffff",
             backgroundGradientTo: "#ffffff",
-            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            decimalPlaces: 1,
+            color: (opacity = 1) => `rgba(90, 106, 207, ${opacity})`,
+            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            barPercentage: 0.5,
+            propsForBackgroundLines: {
+              strokeWidth: 0,
+            },
+          }}
+          style={{
+            marginVertical: 8,
           }}
         />
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -232,44 +263,51 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    padding: 5
   },
   dropdownContainer: {
     position: "relative",
-    margin: 20,
+    marginVertical: 10,
+    marginTop: 40,
+    marginHorizontal: 10,
+
   },
   dropdown: {
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
+    paddingHorizontal: 20,
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 5,
-    backgroundColor: "#fff",
+    borderRadius: 30,
+    backgroundColor: "#F7F7F7",
   },
   dropdownText: {
     marginLeft: 10,
     fontSize: 16,
+    fontWeight: `200`,
   },
   dropdownMenu: {
     position: "absolute",
-    top: 50, // ajuste conforme necessário
+    top: 50,
     left: 0,
     right: 0,
-    backgroundColor: "#fff",
+    backgroundColor: "#F7F7F7",
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 5,
+    borderRadius: 20,
     zIndex: 1,
   },
   dropdownItem: {
     padding: 10,
+    margin: 5,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
   },
   temperatureContainer: {
     alignItems: "flex-start",
     marginLeft: 20,
-    marginVertical: 20,
+    marginTop: 10,
   },
   currentTemperature: {
     fontSize: 80,
@@ -278,19 +316,20 @@ const styles = StyleSheet.create({
   variation: {
     fontSize: 18,
     color: "#666",
+
   },
   chartContainer: {
     marginVertical: 20,
-    paddingHorizontal: 20,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: "300",
     marginBottom: 10,
+    paddingHorizontal: 20,
   },
   barChartContainer: {
     marginVertical: 20,
-    paddingHorizontal: 20,
+
   },
 });
 

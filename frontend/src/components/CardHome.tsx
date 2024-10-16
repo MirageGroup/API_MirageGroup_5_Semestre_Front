@@ -8,6 +8,8 @@ interface CardHomeProps {
   temperature: string;
   temperature_max: string;
   temperature_min: string;
+  temperature_max_backend: string;
+  temperature_min_backend: string;
   humidity: string;
 }
 
@@ -26,6 +28,8 @@ const CardHome: React.FC<CardHomeProps> = ({
   temperature_max,
   temperature_min,
   humidity,
+  temperature_max_backend,
+  temperature_min_backend,
 }) => {
   return (
     <View style={styles.card}>
@@ -36,23 +40,24 @@ const CardHome: React.FC<CardHomeProps> = ({
       <View style={styles.temp}>
         <Text style={styles.temperature}>{temperature}°C</Text>
         <View style={styles.tempRangeContainer}>
-          <Text style={styles.highTemp}>{temperature_max}°↑</Text>
-          <Text style={styles.lowTemp}>{temperature_min}°↓</Text>
+          <Text style={{ color: "#000", fontWeight: "300", fontSize: 18 }}>{temperature_max}°</Text>
+          <Text style={{ color: "#FF0000", fontSize: 18 }}>↑</Text>
+          <Text style={{ color: "#000", fontWeight: "300", fontSize: 18 }}>{temperature_min}°</Text>
+          <Text style={{ color: "#007BFF", fontSize: 18 }}>↓</Text>
         </View>
       </View>
-      {(temperature > temperature_max || temperature < temperature_min) &&
-      temperature ? (
+      {(temperature_max > temperature_max_backend || temperature_min < temperature_min_backend) ? (
         <View style={styles.alertContainer}>
           <Feather name="alert-triangle" size={24} color="red" />
           <Text style={styles.alertText}>
             Hoje as temperaturas vão estar{" "}
-            {temperature > temperature_max ? "acima" : "abaixo"} da temperatura{" "}
-            {temperature > temperature_max ? "maxima" : "minima"} do cultivo!
+            {temperature_max > temperature_max_backend ? "acima" : "abaixo"} da temperatura{" "}
+            {temperature_max > temperature_max_backend ? "máxima" : "mínima"} do cultivo registrado!
           </Text>
         </View>
       ) : null}
       <Text style={styles.rainfall}>
-        Índice de umidade atual:{" "}
+        Índice de pluviometria atual:{" "}
         <Text style={styles.rainfallPercentage}>{humidity}%</Text>
       </Text>
     </View>
@@ -64,7 +69,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fbfbfb",
     borderRadius: 10,
     marginHorizontal: 4,
-    padding: 15,
+    padding: 25,
     marginBottom: 15,
     marginTop: 3,
     shadowColor: "#000",
@@ -89,15 +94,16 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: "400",
     color: "#333",
   },
   date: {
-    fontSize: 14,
+    fontSize: 12,
+    fontWeight: '300',
     color: "#333",
   },
   temperature: {
-    fontSize: 40,
+    fontSize: 46,
     fontWeight: "bold",
     color: "#1E1E1E",
     marginRight: 14,
@@ -106,18 +112,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginTop: 5,
   },
-  highTemp: {
-    fontSize: 18,
-    color: "#FF0000",
-  },
-  lowTemp: {
-    fontSize: 18,
-    marginLeft: 12,
-    color: "#007BFF",
-  },
   rainfall: {
     fontSize: 14,
-    color: "#666",
+    color: "#000",
+    fontWeight: '300',
+    marginTop: 10
   },
   rainfallPercentage: {
     fontWeight: "bold",
