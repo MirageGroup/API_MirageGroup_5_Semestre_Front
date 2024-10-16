@@ -24,9 +24,6 @@ const Navbar = () => {
         <TouchableOpacity onPress={() => handleNavigation('Home')} style={[styles.button, activePage === 'Home' && styles.activeButton]}>
           <Ionicons name="grid" size={32} color={activePage === 'Home' ? '#3874CF' : 'black'} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleNavigation('Dashboard')} style={[styles.button, activePage === 'Dashboard' && styles.activeButton]}>
-          <FontAwesome6 name="chart-simple" size={32} color={activePage === 'Dashboard' ? '#3874CF' : 'black'} />
-        </TouchableOpacity>
         <TouchableOpacity onPress={() => handleNavigation('Location')} style={[styles.button, activePage === 'Location' && styles.activeButton]}>
           <Feather name="plus-circle" size={38} color={activePage === 'Location' ? '#3874CF' : 'black'} />
         </TouchableOpacity>

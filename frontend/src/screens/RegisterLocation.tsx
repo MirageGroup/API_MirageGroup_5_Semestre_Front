@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {
   View,
   StyleSheet,
@@ -83,7 +83,11 @@ const RegisterLocation: React.FC = () => {
         <View style={styles.formContainer}>
           <View>
             <Text style={styles.inputTitle}>Nome do local</Text>
-            <TextInput style={styles.input} value={name} onChangeText={setName} />
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+            />
           </View>
           <View>
             <Text style={styles.inputTitle}>Nome do cultivo (opcional)</Text>
@@ -169,7 +173,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    alignContent: 'stretch'
+    alignContent: "stretch",
   },
   titleArea: {
     flexDirection: "row",
@@ -178,8 +182,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
     paddingHorizontal: 8,
-    marginTop: 40
-
+    marginTop: 40,
   },
   title: {
     fontSize: 20,
