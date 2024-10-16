@@ -22,7 +22,9 @@ const Home: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const fetchLocations = async () => {
     try {
-      const response = await axios.get("http://seuipv4:8080/locations/all");
+      const response = await axios.get(
+        "http://192.168.179.46:8080/locations/all"
+      );
       const locations = response.data;
 
       const updatedLocations = await Promise.all(
@@ -45,7 +47,10 @@ const Home: React.FC<{ navigation: any }> = ({ navigation }) => {
               precipitation: Math.round(dailyData.precipitation_sum[0]),
             };
           } catch (error) {
-            console.error(`Erro ao buscar dados da Open Meteo para ${location.name}:`, error);
+            console.error(
+              `Erro ao buscar dados da Open Meteo para ${location.name}:`,
+              error
+            );
             return location;
           }
         })
@@ -101,13 +106,21 @@ const Home: React.FC<{ navigation: any }> = ({ navigation }) => {
       {/* Conteúdo da tela */}
       <View style={styles.content}>
         <View style={styles.header}>
-          <Image style={styles.stretch} source={require("../../assets/sol.png")} />
+          <Image
+            style={styles.stretch}
+            source={require("../../assets/sol.png")}
+          />
           <Text style={styles.title}>Seus Cultivos</Text>
         </View>
 
         {/* Input para busca com ícone */}
         <View style={styles.searchContainer}>
-          <Icon name="search" size={32} color="#424242" style={styles.searchIcon} />
+          <Icon
+            name="search"
+            size={32}
+            color="#424242"
+            style={styles.searchIcon}
+          />
           <TextInput
             style={styles.searchInput}
             placeholder="Pesquisar um local..."
@@ -117,7 +130,10 @@ const Home: React.FC<{ navigation: any }> = ({ navigation }) => {
         </View>
 
         {/* Lista de Cards */}
-        <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={styles.scrollView}
+        >
           {filteredCardsData.map((data, index) => (
             <TouchableOpacity
               key={index}
@@ -125,7 +141,11 @@ const Home: React.FC<{ navigation: any }> = ({ navigation }) => {
               activeOpacity={1}
             >
               <Animated.View
-                style={[index === selectedCard ? { transform: [{ scale: scaleAnim }] } : {}]}
+                style={[
+                  index === selectedCard
+                    ? { transform: [{ scale: scaleAnim }] }
+                    : {},
+                ]}
               >
                 <CardHome
                   name={data.name}
@@ -157,7 +177,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: "40%",
+    height: 300,
     backgroundColor: "#A2DAFA",
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
@@ -188,7 +208,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderColor: "#ccc",
-    backgroundColor: '#F7F7F7',
+    backgroundColor: "#F7F7F7",
     borderWidth: 1,
     borderRadius: 10,
     marginBottom: 20,

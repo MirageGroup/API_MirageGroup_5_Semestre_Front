@@ -1,6 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import Entypo from '@expo/vector-icons/Entypo';
+import Entypo from "@expo/vector-icons/Entypo";
 import axios from "axios";
+import { ActivityIndicator } from "react-native";
 import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
@@ -9,6 +10,7 @@ import {
   Dimensions,
   TouchableOpacity,
   ScrollView,
+  Animated,
 } from "react-native";
 import { BarChart, LineChart } from "react-native-chart-kit";
 
@@ -21,7 +23,6 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
   const mes = getData.getMonth() + 1;
   const ano = getData.getFullYear();
   const dataHoje = `${dia}/${mes}/${ano}`;
-
 
   const fetchWeatherData = async (
     latitude: number,
@@ -71,16 +72,17 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
   const endDate = "2024-10-28";
 
   const [selectedLocation, setSelectedLocation] = useState(location);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const getWeatherData = async () => {
+      setLoading(true);
       const data = await fetchWeatherData(
-        selectedLocation.latitude,
-        selectedLocation.longitude,
+        latitude,
+        longitude,
         startDate,
         endDate
       );
-      console.log("Dados de precipitação:", data.daily?.precipitation_sum);
 
       const maxTemperatures = (data?.daily?.temperature_2m_max || []).map(
         (value) => Math.round(value) || 0
@@ -113,7 +115,6 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
         legend: ["Máxima", "Mínima"],
       });
 
-
       const precipitationAmounts = (data?.daily?.precipitation_sum || []).map(
         (value) => value ?? 0
       );
@@ -127,6 +128,7 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
           },
         ],
       });
+      setLoading(false);
     };
 
     getWeatherData();
@@ -134,19 +136,35 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const toggleDropdown = () => {
-    setIsDropdownOpen((prev) => !prev);
+    if (isDropdownOpen) {
+      Animated.timing(dropdownOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setIsDropdownOpen(false));
+    } else {
+      setIsDropdownOpen(true);
+      Animated.timing(dropdownOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
   };
 
   const [locations, setLocations] = useState<Array<any>>([]);
 
   const fetchLocations = async () => {
     try {
-      const response = await axios.get("http://seuipv4:8080/locations/all");
+      const response = await axios.get(
+        "http://192.168.179.46:8080/locations/all"
+      );
       setLocations(response.data);
     } catch (error) {
       console.error("Erro ao buscar localidades:", error);
     }
   };
+  const [dropdownOpacity] = useState(new Animated.Value(0));
 
   const handleLocationSelect = (loc: any) => {
     setSelectedLocation(loc);
@@ -157,30 +175,43 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
     fetchLocations();
   }, []);
 
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#3498db" />
+      </View>
+    );
+  }
   return (
     <ScrollView style={styles.container}>
       <View style={styles.dropdownContainer}>
         <TouchableOpacity style={styles.dropdown} onPress={toggleDropdown}>
-          <MaterialIcons name="location-on" size={24} color="black" />
-          <Text style={styles.dropdownText}>{selectedLocation.name}</Text>
-          <Entypo style={{ marginLeft: 70 }}
+          <View style={styles.dropdownItens}>
+            <MaterialIcons name="location-on" size={24} color="black" />
+            <Text style={styles.dropdownText}>{selectedLocation.name}</Text>
+          </View>
+          <Entypo
             name={isDropdownOpen ? "chevron-up" : "chevron-down"}
             size={24}
             color="black"
           />
         </TouchableOpacity>
         {isDropdownOpen && (
-          <View style={styles.dropdownMenu}>
-            {locations.map((loc, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.dropdownItem}
-                onPress={() => handleLocationSelect(loc)}
-              >
-                <Text>{loc.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <Animated.View
+            style={[styles.dropdownMenu, { opacity: dropdownOpacity }]}
+          >
+            <ScrollView>
+              {locations.map((item) => (
+                <TouchableOpacity
+                  key={item.name}
+                  style={styles.dropdownItem}
+                  onPress={() => handleLocationSelect(item)}
+                >
+                  <Text>{item.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </Animated.View>
         )}
       </View>
 
@@ -191,9 +222,13 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
         )}
         {maxTemperature !== null && minTemperature !== null && (
           <Text style={styles.variation}>
-            <Text style={{ color: "#000", fontWeight: "200" }}>{maxTemperature}°</Text>
+            <Text style={{ color: "#000", fontWeight: "200" }}>
+              {maxTemperature}°
+            </Text>
             <Text style={{ color: "#FF0000" }}>↑</Text>
-            <Text style={{ color: "#000", fontWeight: "200" }}>{minTemperature}°</Text>
+            <Text style={{ color: "#000", fontWeight: "200" }}>
+              {minTemperature}°
+            </Text>
             <Text style={{ color: "#007BFF" }}>↓</Text>
           </Text>
         )}
@@ -228,8 +263,6 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
           }}
           verticalLabelRotation={0}
         />
-
-
       </View>
 
       <View style={styles.barChartContainer}>
@@ -263,16 +296,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    padding: 5
+    padding: 5,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   dropdownContainer: {
     position: "relative",
     marginVertical: 10,
     marginTop: 40,
     marginHorizontal: 10,
-
   },
   dropdown: {
+    justifyContent: "space-between",
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
@@ -281,6 +319,10 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 30,
     backgroundColor: "#F7F7F7",
+  },
+  dropdownItens: {
+    display: "flex",
+    flexDirection: "row",
   },
   dropdownText: {
     marginLeft: 10,
@@ -297,7 +339,9 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 20,
     zIndex: 1,
+    overflow: "hidden",
   },
+
   dropdownItem: {
     padding: 10,
     margin: 5,
@@ -316,7 +360,6 @@ const styles = StyleSheet.create({
   variation: {
     fontSize: 18,
     color: "#666",
-
   },
   chartContainer: {
     marginVertical: 20,
@@ -329,7 +372,6 @@ const styles = StyleSheet.create({
   },
   barChartContainer: {
     marginVertical: 20,
-
   },
 });
 
