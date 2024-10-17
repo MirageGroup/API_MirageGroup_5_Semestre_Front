@@ -13,6 +13,7 @@ import axios from "axios";
 import CardHome from "../components/CardHome";
 import { useFocusEffect } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import { API_URL } from "@env";
 
 const Home: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [cardsData, setCardsData] = useState<Array<any>>([]);
@@ -23,7 +24,7 @@ const Home: React.FC<{ navigation: any }> = ({ navigation }) => {
   const fetchLocations = async () => {
     try {
       const response = await axios.get(
-        "http://ipv4:8080/locations/all"
+        `http://${API_URL}:8080/locations/all`
       );
       const locations = response.data;
 

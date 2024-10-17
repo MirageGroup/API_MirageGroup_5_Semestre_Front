@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import Slider from "../components/Slider";
 import axios from "axios";
+import { API_URL } from "@env";
 
 const RegisterLocation: React.FC = () => {
   const [name, setName] = useState("");
@@ -51,7 +52,7 @@ const RegisterLocation: React.FC = () => {
     console.log(data);
 
     await axios
-      .post("http://ipv4:8080/locations/create", data)
+      .post(`http://${API_URL}:8080/locations/create`, data)
       .then((response) => {
         console.log("console log response:", response);
         Alert.alert("Sucesso", "Local registrado com sucesso!");

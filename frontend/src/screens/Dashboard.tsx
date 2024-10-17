@@ -13,6 +13,7 @@ import {
   Animated,
 } from "react-native";
 import { BarChart, LineChart } from "react-native-chart-kit";
+import { API_URL } from "@env";
 
 const Dashboard: React.FC<{ route: any }> = ({ route }) => {
   const { location } = route.params;
@@ -157,7 +158,7 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
   const fetchLocations = async () => {
     try {
       const response = await axios.get(
-        "http://ipv4:8080/locations/all"
+        `http://${API_URL}:8080/locations/all`
       );
       setLocations(response.data);
     } catch (error) {

@@ -10,6 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { API_URL } from "@env";
 
 interface LoginProps {
   onLogin: () => void;
@@ -31,7 +32,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     }
 
     try {
-      const response = await fetch("http://ipv4:8080/user/login", {
+      const response = await fetch(`http://${API_URL}:8080/user/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
