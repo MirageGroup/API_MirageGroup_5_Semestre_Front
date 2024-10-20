@@ -5,7 +5,6 @@ import * as Notifications from "expo-notifications";
 
 interface CardHomeProps {
   name: string;
-  datetime: string;
   temperature: string;
   temperature_max: string;
   temperature_min: string;
@@ -14,11 +13,6 @@ interface CardHomeProps {
   humidity: string;
 }
 
-const getData = new Date();
-const dia = getData.getDate();
-const mes = getData.getMonth() + 1;
-const ano = getData.getFullYear();
-const dataHoje = `${dia}/${mes}/${ano}`;
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -41,7 +35,6 @@ const sendNotification = async (title: string, body: string) => {
 
 const CardHome: React.FC<CardHomeProps> = ({
   name,
-  datetime,
   temperature,
   temperature_max,
   temperature_min,
@@ -56,13 +49,10 @@ const CardHome: React.FC<CardHomeProps> = ({
   useEffect(() => {
     if (showAlert) {
       const title = "Alerta de Temperatura!";
-      const body = `As temperaturas de ${name} estão ${
-        parseFloat(temperature_max) > parseFloat(temperature_max_backend)
-          ? "acima"
-          : "abaixo"
-      } da faixa recomendada.`;
-      
-      // Enviar notificação push
+      const body = `As temperaturas de ${name} estão ${parseFloat(temperature_max) > parseFloat(temperature_max_backend)
+        ? "acima"
+        : "abaixo"
+        } da faixa recomendada.`;
       sendNotification(title, body);
     }
   }, [showAlert]);
@@ -70,8 +60,7 @@ const CardHome: React.FC<CardHomeProps> = ({
   return (
     <View style={styles.card}>
       <View style={styles.title}>
-        <Text style={styles.location}>{name}, </Text>
-        <Text style={styles.date}>{dataHoje}</Text>
+        <Text style={styles.location}>{name}</Text>
       </View>
       <View style={styles.temp}>
         <Text style={styles.temperature}>{temperature}°C</Text>

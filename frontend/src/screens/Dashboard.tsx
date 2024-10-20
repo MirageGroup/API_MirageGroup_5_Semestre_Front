@@ -1,8 +1,10 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import Entypo from "@expo/vector-icons/Entypo";
+import { useNavigation } from '@react-navigation/native';
 import axios from "axios";
-import { ActivityIndicator } from "react-native";
+import { ActivityIndicator, Modal } from "react-native";
 import React, { useEffect, useState } from "react";
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import {
   StyleSheet,
   Text,
@@ -14,39 +16,69 @@ import {
 } from "react-native";
 import { BarChart, LineChart } from "react-native-chart-kit";
 import { API_URL } from "@env";
+import { StackNavigationProp } from "@react-navigation/stack";
+type StackParamList = {
+  Home: undefined;
+};
+
+type NavigationProps = StackNavigationProp<StackParamList, 'Home'>;
 
 const Dashboard: React.FC<{ route: any }> = ({ route }) => {
+  const navigation = useNavigation<NavigationProps>();
+
   const { location } = route.params;
-  const { latitude, longitude, name } = location;
+
+  const formatDay = (date: Date): string => {
+    return String(date.getDate()).padStart(2, "0");
+  };
 
   const getData = new Date();
   const dia = getData.getDate();
   const mes = getData.getMonth() + 1;
   const ano = getData.getFullYear();
-  const dataHoje = `${dia}/${mes}/${ano}`;
+  const dataAtual = `${dia}/${mes}/${ano}`;
 
-  const fetchWeatherData = async (
-    latitude: number,
-    longitude: number,
-    startDate: string,
-    endDate: string
-  ) => {
+  const getNext7Days = (): string[] => {
+    const today = new Date();
+    const days = [];
+
+    const abbreviatedDays = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
+
+    days.push("Hoje");
+
+    for (let i = 1; i < 7; i++) {
+      const nextDate = new Date(today);
+      nextDate.setDate(today.getDate() + i);
+      const dayIndex = nextDate.getDay();
+      days.push(abbreviatedDays[dayIndex]);
+    }
+
+    return days;
+  };
+
+  const dateLabels = getNext7Days();
+
+  const today = new Date();
+  const dataHoje = formatDay(today);
+
+
+  const fetchWeatherData = async (latitude: number, longitude: number, days: number = 7) => {
     const response = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}&temperature_unit=celsius&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&current_weather=true&timezone=auto`
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&current_weather=true&timezone=auto&forecast_days=${days}&temperature_unit=celsius`
     );
     const data = await response.json();
     return data;
   };
 
   const [temperatureData, setTemperatureData] = useState({
-    labels: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+    labels: dateLabels,
     datasets: [
       {
-        data: [25, 27, 28, 29, 30, 32, 31].map((value) => value || 0),
+        data: [],
         color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
       },
       {
-        data: [18, 19, 20, 21, 22, 23, 24].map((value) => value || 0),
+        data: [],
         color: (opacity = 1) => `rgba(0, 0, 255, ${opacity})`,
       },
     ],
@@ -54,55 +86,44 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
   });
 
   const [precipitationData, setPrecipitationData] = useState({
-    labels: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+    labels: dateLabels,
     datasets: [
       {
-        data: [0, 0, 0, 0, 0, 0, 0],
+        data: [],
         color: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
       },
     ],
   });
 
-  const [currentTemperature, setCurrentTemperature] = useState<number | null>(
-    null
-  );
+  const [currentTemperature, setCurrentTemperature] = useState<number | null>(null);
   const [maxTemperature, setMaxTemperature] = useState<number | null>(null);
   const [minTemperature, setMinTemperature] = useState<number | null>(null);
 
-  const startDate = "2024-10-14";
-  const endDate = "2024-10-28";
-
   const [selectedLocation, setSelectedLocation] = useState(location);
   const [loading, setLoading] = useState(true);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
 
   useEffect(() => {
     const getWeatherData = async () => {
       setLoading(true);
       const data = await fetchWeatherData(
-        selectedLocation.latitude, 
-        selectedLocation.longitude, 
-        startDate,
-        endDate
+        selectedLocation.latitude,
+        selectedLocation.longitude
       );
 
       const maxTemperatures = (data?.daily?.temperature_2m_max || []).map(
-        (value) => Math.round(value) || 0
+        (value: number) => Math.round(value) || 0
       );
       const minTemperatures = (data?.daily?.temperature_2m_min || []).map(
-        (value) => Math.round(value) || 0
+        (value: number) => Math.round(value) || 0
       );
 
-      const currentWeather = data?.current_weather;
-      const currentTemp = currentWeather?.temperature;
-
-      const roundedCurrentTemp = Math.round(currentTemp);
-
-      setCurrentTemperature(roundedCurrentTemp);
       setMaxTemperature(Math.max(...maxTemperatures));
       setMinTemperature(Math.min(...minTemperatures));
 
       setTemperatureData({
-        labels: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+        labels: dateLabels,
         datasets: [
           {
             data: maxTemperatures,
@@ -117,11 +138,11 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
       });
 
       const precipitationAmounts = (data?.daily?.precipitation_sum || []).map(
-        (value) => value ?? 0
+        (value: number) => value ?? 0
       );
 
       setPrecipitationData({
-        labels: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+        labels: dateLabels,
         datasets: [
           {
             data: precipitationAmounts,
@@ -129,6 +150,12 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
           },
         ],
       });
+
+      const currentWeather = data?.current_weather;
+      if (currentWeather?.temperature) {
+        setCurrentTemperature(Math.round(currentWeather.temperature));
+      }
+
       setLoading(false);
     };
 
@@ -157,9 +184,7 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
 
   const fetchLocations = async () => {
     try {
-      const response = await axios.get(
-        `http://${API_URL}:8080/locations/all`
-      );
+      const response = await axios.get(`http://${API_URL}:8080/locations/all`);
       setLocations(response.data);
     } catch (error) {
       console.error("Erro ao buscar localidades:", error);
@@ -183,6 +208,23 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
       </View>
     );
   }
+
+  const confirmDelete = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://${API_URL}:8080/locations/delete/${selectedLocation.id}`);
+      setLocations((prevLocations) => prevLocations.filter(location => location.id !== id))
+      navigation.navigate("Home");
+    } catch (error) {
+      console.error("Erro ao deletar o local!", error);
+    } finally {
+      setIsModalVisible(false);
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.dropdownContainer}>
@@ -217,7 +259,10 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
       </View>
 
       <View style={styles.temperatureContainer}>
-        <Text style={{ fontWeight: "200" }}>Hoje, {dataHoje}</Text>
+        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: "center", width: '100%', paddingRight: 16, }}>
+          <Text style={{ fontWeight: "200", fontSize: 16 }}>Hoje, {dataAtual}</Text>
+          <FontAwesome6 name="trash" size={28} color="#D54B4B" onPress={confirmDelete} />
+        </View>
         {currentTemperature !== null && (
           <Text style={styles.currentTemperature}>{currentTemperature}°C</Text>
         )}
@@ -241,6 +286,7 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
           data={temperatureData}
           width={Dimensions.get("window").width - 40}
           height={220}
+          yAxisSuffix="°C"
           chartConfig={{
             backgroundColor: "#ffffff",
             backgroundGradientFrom: "#ffffff",
@@ -289,6 +335,26 @@ const Dashboard: React.FC<{ route: any }> = ({ route }) => {
           }}
         />
       </View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalMessage}>Você realmente deseja excluir a localização?</Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity onPress={handleDelete} style={styles.confirmButton}>
+                <Text style={styles.buttonText}>Sim</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setIsModalVisible(false)} style={styles.cancelButton}>
+                <Text style={styles.buttonText}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -356,6 +422,52 @@ const styles = StyleSheet.create({
   },
   currentTemperature: {
     fontSize: 80,
+    fontWeight: "bold",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    width: 300,
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalMessage: {
+    fontSize: 16,
+    fontWeight: '300',
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  confirmButton: {
+    flex: 1,
+    backgroundColor: "#D54B4B",
+    borderRadius: 5,
+    padding: 10,
+    marginRight: 5,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: "#909090",
+    borderRadius: 5,
+    padding: 10,
+    marginLeft: 5,
+  },
+  buttonText: {
+    color: "white",
+    textAlign: "center",
     fontWeight: "bold",
   },
   variation: {

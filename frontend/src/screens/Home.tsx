@@ -150,7 +150,6 @@ const Home: React.FC<{ navigation: any }> = ({ navigation }) => {
               >
                 <CardHome
                   name={data.name}
-                  datetime={data.datetime}
                   temperature={data.temperature}
                   temperature_max={data.temperature_max}
                   temperature_min={data.temperature_min}
