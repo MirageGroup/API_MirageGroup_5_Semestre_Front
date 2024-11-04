@@ -11,12 +11,20 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { API_URL } from "@env";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 
 interface LoginProps {
   onLogin: () => void;
 }
 
+
+
+type StackParamList = {
+  register: undefined;
+};
+
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
@@ -30,9 +38,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       Alert.alert("Erro", "Por favor, preencha todos os campos.");
       return;
     }
-
+    console.log(`http://${API_URL}:8080/user/login`)
     try {
-      const response = await fetch(`http://${API_URL}:8080/user/login`, {
+      const response = await fetch(`http://${API_URL}:8080/user/login`,
+         {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -111,7 +120,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         <Text style={styles.buttonText}>Entrar</Text>
       </TouchableOpacity>
 
-      <Text style={styles.linkText}>Primeiro acesso</Text>
+      <TouchableOpacity
+
+        onPress={() => {
+          navigation.navigate("register");
+        }}
+      >
+        <Text style={styles.linkText}>Primeiro acesso</Text>
+      </TouchableOpacity>
       <StatusBar style="auto" />
     </View>
   );
