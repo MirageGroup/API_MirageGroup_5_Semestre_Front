@@ -1,10 +1,18 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, Alert, Animated } from 'react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '@env';
 
-const Profile: React.FC = () => {
+interface LogoutProps {
+  onLogout: () => void;
+}
+const Profile: React.FC<LogoutProps> = ({ onLogout }) => {
+  const [userId, setUserId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState(require("../../assets/profile-user-icon.jpg"));
+  const [name, setName] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [dropdownOpacity] = useState(new Animated.Value(0));
@@ -24,6 +32,18 @@ const Profile: React.FC = () => {
       }).start();
     }
   };
+
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      const savedImageUri = await AsyncStorage.getItem('profileImageUri');
+      if (savedImageUri) {
+        setSelectedImage({ uri: savedImageUri });
+      }
+    };
+
+    fetchImage();
+  }, []);
   const handleImageSelection = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
@@ -31,7 +51,7 @@ const Profile: React.FC = () => {
       return;
     }
 
-    let result = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
       aspect: [1, 1],
@@ -39,13 +59,79 @@ const Profile: React.FC = () => {
     });
 
     if (!result.canceled) {
-      setSelectedImage({ uri: result.assets[0].uri });
+      const uri = result.assets[0].uri;
+      setSelectedImage({ uri });
+      await AsyncStorage.setItem('profileImageUri', uri);
     }
   };
 
-  const handleLogout = () => {
-
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('userId');
+    await AsyncStorage.removeItem('profileImageUri');
+    onLogout();
   }
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const storedUserId = await AsyncStorage.getItem('userId');
+      setUserId(storedUserId);
+    };
+
+    fetchUserId();
+  }, []);
+
+  useEffect(() => {
+    if (userId) {
+      const fetchUserData = async () => {
+        try {
+          const response = await fetch(`http://${API_URL}:8080/user/getprofile/${userId}`);
+          const data = await response.json();
+          setName(data.name);
+          setUserName(data.user);
+        } catch (error) {
+          console.error("Erro ao buscar dados do usuário:", error);
+        }
+      };
+  
+      fetchUserData();
+    }
+  }, [userId]);
+
+  const handleDeleteProfile = async () => {
+    Alert.alert(
+      "Excluir conta",
+      "Tem certeza que deseja excluir sua conta? Esta ação não poderá ser desfeita.",
+      [
+        {
+          text: "Cancelar",
+          onPress: () => console.log("Exclusão cancelada"),
+          style: "cancel", 
+        },
+        {
+          text: "Excluir",
+          onPress: async () => {
+            try {
+              const response = await fetch(`http://${API_URL}:8080/user/delete/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+  
+              if (response.ok) {
+                handleLogout();
+                Alert.alert("Conta excluída", "Sua conta foi excluída com sucesso");
+              } else {
+                console.error("Erro ao excluir o perfil");
+              }
+            } catch (error) {
+              console.error("Erro ao deletar o perfil!", error);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -58,16 +144,20 @@ const Profile: React.FC = () => {
           <Animated.View
           style={[styles.dropdownMenu, { opacity: dropdownOpacity }]}
         >
-          <TouchableOpacity style={styles.dropdownItem}>
+          <TouchableOpacity style={styles.dropdownItem} onPress={handleDeleteProfile}>
             <Ionicons name="trash" size={20}/>
             <Text style={styles.dropdownText}>Excluir perfil</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.dropdownItem} onPress={handleLogout}>
+            <Ionicons name="exit" size={20}/>
+            <Text style={styles.dropdownText}>Sair da conta</Text>
           </TouchableOpacity>
         </Animated.View>
         )}
       </View>
       <View style={styles.content}>
         <View style={styles.header}>
-          <TextInput editable={false} style={styles.name}>User Name</TextInput>
+          <TextInput editable={false} style={styles.name}>{name}</TextInput>
           <TouchableOpacity onPress={handleImageSelection}>
             <Image style={styles.profileImage} source={selectedImage} />
             <View style={styles.iconCamera}>
@@ -81,12 +171,9 @@ const Profile: React.FC = () => {
         <View>
           <Text style={styles.title}>E-mail</Text>
           <View style={styles.inputContainer}>
-            <TextInput editable={false} style={styles.input}/>
+            <TextInput editable={false} style={styles.input}>{userName}</TextInput>
           </View>
         </View>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.buttonText}>Sair da conta</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -116,13 +203,13 @@ const styles = StyleSheet.create({
   header: {
     alignItems: "center",
     marginBottom: 30,
-    marginTop: 40,
+    marginTop: 30,
   },
   name: {
-    fontSize: 36,
+    fontSize: 42,
     fontWeight: "300",
     color: "#2D2D2D",
-    marginBottom: 60,
+    marginBottom: 50,
   },
   profileImage: {
     width: 170,
@@ -138,7 +225,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: "400",
-    marginTop: 10,
+    marginTop: 15,
     marginBottom: 10,
   },
   inputContainer: {
@@ -157,16 +244,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: "#333",
-  },
-  logoutButton: {
-    position: "absolute",
-    bottom: 20,
-    width: "100%",
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#4da6ff",
-    fontSize: 16,
   },
   menuBar: {
     alignSelf: "flex-end",
