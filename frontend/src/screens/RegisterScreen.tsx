@@ -12,16 +12,15 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { API_URL } from "@env";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-
+import Feather from '@expo/vector-icons/Feather';
 
 type StackParamList = {
     Login: undefined;
 };
 
-
-
 const Register: React.FC = () => {
     const [email, setEmail] = useState<string>("");
+    const [name, setName] = useState<string>("");
     const navigation = useNavigation<NavigationProp<StackParamList>>();
     const [password, setPassword] = useState<string>("");
     const [confirmPassword, setConfirmPassword] = useState<string>("");
@@ -37,7 +36,7 @@ const Register: React.FC = () => {
     };
 
     const handleRegister = async () => {
-        if (!email || !password || !confirmPassword) {
+        if (!email || !password || !confirmPassword || !name) {
             Alert.alert("Erro", "Por favor, preencha todos os campos.");
             return;
         }
@@ -61,10 +60,12 @@ const Register: React.FC = () => {
                 },
                 body: JSON.stringify({
                     user: email,
+                    name: name,
                     password: password,
                 }),
             })
             if (response.status === 201) {
+                Alert.alert("Sucesso", "Usuário criado com sucesso!")
                 navigation.navigate("Login");
             } else if (response.status === 401) {
                 Alert.alert("Erro", "Credenciais inválidas.");
@@ -72,7 +73,6 @@ const Register: React.FC = () => {
                 Alert.alert("Erro", "Ocorreu um erro. Tente novamente mais tarde.");
             }
         } catch (error) {
-            
             console.error("Erro ao Registrar usuario:", error);
             Alert.alert("Erro", "Não foi possível conectar ao servidor.");
         }
@@ -86,6 +86,17 @@ const Register: React.FC = () => {
             />
 
             <Text style={styles.title}>ClimaMonitor</Text>
+
+            <View style={styles.inputContainer}>
+                <Feather name="user" size={24} color="#666" style={styles.inputIcon} />
+                <TextInput
+                    style={styles.input}
+                    placeholder="name"
+                    placeholderTextColor="#999"
+                    value={name}
+                    onChangeText={setName}
+                />
+            </View>
 
             <View style={styles.inputContainer}>
                 <Ionicons name="mail-outline" size={20} color="#666" style={styles.inputIcon} />
