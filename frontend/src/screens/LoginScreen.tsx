@@ -11,13 +11,13 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { API_URL } from "@env";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationProp, useNavigation } from "@react-navigation/native";
+
 
 interface LoginProps {
   onLogin: () => void;
 }
-
-
 
 type StackParamList = {
   register: undefined;
@@ -53,6 +53,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       });
 
       if (response.status === 200) {
+        const data = await response.json();
+        await AsyncStorage.setItem('userId', data.toString());
         onLogin();
       } else if (response.status === 401) {
         Alert.alert("Erro", "Credenciais inválidas.");

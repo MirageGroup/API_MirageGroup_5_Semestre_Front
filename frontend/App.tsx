@@ -18,6 +18,10 @@ export default function App() {
     setIsLoggedIn(true);
   };
 
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+  };
+
   const requestPermissions = async () => {
     const { status } = await Notifications.requestPermissionsAsync();
     if (status !== 'granted') {
@@ -48,7 +52,9 @@ export default function App() {
             <Stack.Screen name="Home" component={Home} />
             <Stack.Screen name="Dashboard" component={Dashboard} />
             <Stack.Screen name="Location" component={RegisterLocation} />
-            <Stack.Screen name="Profile" component={Profile} />
+            <Stack.Screen name="Profile"> 
+              {() => <Profile onLogout={handleLogout} />}
+            </Stack.Screen>
           </>
         )}
       </Stack.Navigator>
