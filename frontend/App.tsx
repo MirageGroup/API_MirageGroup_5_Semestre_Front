@@ -6,6 +6,7 @@ import Home from "./src/screens/Home";
 import RegisterLocation from "./src/screens/RegisterLocation";
 import Dashboard from "./src/screens/Dashboard";
 import Profile from "./src/screens/Profile";
+import Register from "./src/screens/RegisterScreen";
 import Login from "./src/screens/LoginScreen";
 import * as Notifications from "expo-notifications";
 
@@ -23,7 +24,7 @@ export default function App() {
       alert('Permissão de notificação negada!');
     }
   };
-  
+
   useEffect(() => {
     requestPermissions();
   }, []);
@@ -31,10 +32,17 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
+
         {!isLoggedIn ? (
-          <Stack.Screen name="Login">
-            {() => <Login onLogin={handleLogin} />}
-          </Stack.Screen>
+          <>
+            <Stack.Screen name="Login">
+              {() => <Login onLogin={handleLogin} />}
+            </Stack.Screen>
+            <Stack.Screen name="register">
+              {() => <Register/>}
+            </Stack.Screen>
+          </>
+
         ) : (
           <>
             <Stack.Screen name="Home" component={Home} />
